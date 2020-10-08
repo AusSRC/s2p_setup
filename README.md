@@ -5,6 +5,12 @@ SoFiA-X runs. SoFiA-X is the parallel framework around the SoFiA 2
 extragalactic HI source finding pipeline.
 
 
+## Prerequisites
+
+* SoFiA 2: https://github.com/SoFiA-Admin/SoFiA-2
+* SoFiA-X: https://github.com/AusSRC/SoFiAX
+
+
 ## Usage     
 
     s2p_setup.py <data_cube> <template_par_file> <unique_name>
@@ -43,12 +49,6 @@ launch SoFiA-X.
 Note that this script does not actually cut up the data cube, but it
 generates the required number of SoFiA parameter files for reading in and
 processing sub-regions of the cube.
-
-
-## Links
-
-* SoFiA 2: https://github.com/SoFiA-Admin/SoFiA-2
-* SoFiA-X: https://github.com/AusSRC/SoFiAX
 
 
 ## Copyright and licence
