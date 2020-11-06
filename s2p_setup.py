@@ -149,9 +149,9 @@ hdu.close();
 if(x_min < 0): x_min = 0;
 if(y_min < 0): y_min = 0;
 if(z_min < 0): z_min = 0;
-if(x_max > nx - 1): x_max = nx - 1;
-if(y_max > ny - 1): y_max = ny - 1;
-if(z_max > nz - 1): z_max = nz - 1;
+if(x_max >= nx): x_max = nx - 1;
+if(y_max >= ny): y_max = ny - 1;
+if(z_max >= nz): z_max = nz - 1;
 
 sys.stdout.write("\nInput:\n");
 sys.stdout.write("  Input range:     {0}-{1}, {2}-{3}, {4}-{5}\n".format(x_min, x_max, y_min, y_max, z_min, z_max));
@@ -212,9 +212,9 @@ for z in range(n_reg_z):
 			if(x1 < 0): x1 = 0;
 			if(y1 < 0): y1 = 0;
 			if(z1 < 0): z1 = 0;
-			if(x2 > x_max): x2 = x_max;
-			if(y2 > y_max): y2 = y_max;
-			if(z2 > z_max): z2 = z_max;
+			if(x2 > x_max or x == n_reg_x - 1): x2 = x_max;
+			if(y2 > y_max or y == n_reg_y - 1): y2 = y_max;
+			if(z2 > z_max or z == n_reg_z - 1): z2 = z_max;
 			
 			i = substr_search(par, "input.region");
 			if(i < 0): par.append("input.region  =  {0:d},{1:d},{2:d},{3:d},{4:d},{5:d}\n".format(x1, x2, y1, y2, z1, z2));
