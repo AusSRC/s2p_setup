@@ -47,7 +47,7 @@ def substr_search(input_list, substr):
 
 # Read settings from configuration file
 config = configparser.ConfigParser();
-success = config.read("s2p_setup.ini");
+success = config.read("/app/s2p_setup.ini");
 
 if(len(success) == 0):
 	sys.stderr.write("Error: Failed to read config file: s2p_setup.ini\n       Please ensure that a copy of that file is in the current directory.\n");
@@ -77,7 +77,7 @@ tolerance_spec  = [int(x) for x in tolerance_spec];
 argv = sys.argv;
 argc = len(argv);
 
-if(argc != 4):
+if(argc != 5):
 	sys.stderr.write("\n\033[1;7;36m Usage     \033[0m\n\n");
 	sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<data_cube> <template_par_file> <unique_name>\033[0m\n\n");
 	sys.stderr.write("\033[1;7;36m Arguments \033[0m\n\n");
@@ -107,6 +107,7 @@ if(argc != 4):
 input_filename = str(argv[1]); # FITS data cube
 template_file  = str(argv[2]); # SoFiA 2 template parameter file to be used for all subregions
 db_run_name    = str(argv[3]); # Unique name of run (used for database table)
+output_dir 	   = str(argv[4]); # Output directory for parameter files
 
 
 # Try to open FITS file
@@ -225,7 +226,7 @@ for z in range(n_reg_z):
 			else: par[i] = "output.filename  =  {0}_{1:03d}\n".format(db_run_name, index);
 			
 			# Dump parameters into new file
-			filename = "sofia_{0:03d}.par".format(index);
+			filename = "{0}/sofia_{1:03d}.par".format(output_dir, index);
 			sys.stdout.write("  {0}\n".format(filename));
 			try:
 				with open(filename, "w") as par_file:
@@ -258,7 +259,7 @@ content.append("flux={0:d}\n".format(tolerance_flux));
 content.append("uncertainty_sigma={0:d}\n".format(tolerance_pos));
 
 try:
-	with open("config.ini", "w") as config_file:
+	with open("{0}/config.ini".format(output_dir), "w") as config_file:
 		for item in content:
 			config_file.write("{0}".format(item));
 except:
@@ -282,7 +283,7 @@ content.append("module load python/3.7.4\n\n");
 content.append("source {0}/env/bin/activate && python {1}/sofiax/sofiax/sofiax.py -c $1 -p $2\n".format(config["path"]["sofiax_base_dir"], config["path"]["sofiax_base_dir"]));
 
 try:
-	with open("sofiax.sh", "w") as config_file:
+	with open("{0}/sofiax.sh".format(output_dir), "w") as config_file:
 		for item in content:
 			config_file.write("{0}".format(item));
 except:
@@ -304,7 +305,7 @@ content.append("    sbatch ./sofiax.sh {0}/config.ini {0}/sofia_$i.par\n".format
 content.append("done\n");
 
 try:
-	with open("run_sofiax.sh", "w") as config_file:
+	with open("{0}/run_sofiax.sh".format(output_dir), "w") as config_file:
 		for item in content:
 			config_file.write("{0}".format(item));
 except:
