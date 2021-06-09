@@ -272,15 +272,15 @@ sys.stdout.write("  sofiax.sh\n");
 content = [];
 content.append("#!/bin/bash\n\n");
 content.append("#SBATCH --job-name=sofiax\n");
-content.append("#SBATCH --output={0}/sofiax_output_%j.log\n".format(os.getcwd()));
-content.append("#SBATCH --error={0}/sofiax_error_%j.log\n".format(os.getcwd()));
+content.append("#SBATCH --output={0}/sofiax_output_%j.log\n".format(output_dir));
+content.append("#SBATCH --error={0}/sofiax_error_%j.log\n".format(output_dir));
 content.append("#SBATCH -N 1 # nodes\n");
 content.append("#SBATCH -n 1 # tasks\n");
 content.append("#SBATCH -c {0:d} # CPUs per node\n".format(n_cpu_cores));
 content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node));
 content.append("module load openssl/default\n");
 content.append("module load python/3.7.4\n\n");
-content.append("source {0}/env/bin/activate && python {1}/sofiax/sofiax/sofiax.py -c $1 -p $2\n".format(config["path"]["sofiax_base_dir"], config["path"]["sofiax_base_dir"]));
+content.append("singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/SoFiAX/sofiax.sif sofiax -c $1 -p $2\n");
 
 try:
 	with open("{0}/sofiax.sh".format(output_dir), "w") as config_file:
@@ -301,7 +301,7 @@ for i in range(n_reg_x * n_reg_y * n_reg_z):
 content.append(")\n");
 content.append("for i in \"${param[@]}\"\n");
 content.append("do\n");
-content.append("    sbatch ./sofiax.sh {0}/config.ini {0}/sofia_$i.par\n".format(os.getcwd()));
+content.append("    sbatch ./sofiax.sh {0}/config.ini {0}/sofia_$i.par\n".format(output_dir));
 content.append("done\n");
 
 try:
