@@ -298,15 +298,15 @@ sys.stdout.write("  sofia.sh\n")
 content = []
 content.append("#!/bin/bash\n\n")
 content.append("#SBATCH --job-name=sofia\n")
-content.append("#SBATCH --output={0}/logs/sofiax_output_%j.log\n".format(output_dir))
-content.append("#SBATCH --error={0}/logs/sofiax_error_%j.log\n".format(output_dir))
+content.append("#SBATCH --output={0}/logs/sofia_output_%j.log\n".format(output_dir))
+content.append("#SBATCH --error={0}/logs/sofia_error_%j.log\n".format(output_dir))
 content.append("#SBATCH -N 1 # nodes\n")
 content.append("#SBATCH -n 1 # tasks\n")
 content.append("#SBATCH -c {0:d} # CPUs per node\n".format(n_cpu_cores))
 content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
 content.append("module load openssl/default\n")
 content.append(
-    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofia.img sofia -p $1\n"
+    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofia.img sofia $1\n"
 )
 
 
