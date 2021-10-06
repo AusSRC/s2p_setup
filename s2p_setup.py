@@ -293,55 +293,6 @@ except Exception:
     sys.exit(1)
 
 
-# sofia.sh
-sys.stdout.write("  sofia.sh\n")
-content = []
-content.append("#!/bin/bash\n\n")
-content.append("#SBATCH --job-name=sofia\n")
-content.append("#SBATCH --output={0}/logs/sofia_output_%j.log\n".format(output_dir))
-content.append("#SBATCH --error={0}/logs/sofia_error_%j.log\n".format(output_dir))
-content.append("#SBATCH -N 1 # nodes\n")
-content.append("#SBATCH -n 1 # tasks\n")
-content.append("#SBATCH -c {0:d} # CPUs per node\n".format(n_cpu_cores))
-content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
-content.append("module load openssl/default\n")
-content.append(
-    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofia.img sofia $1\n"
-)
-
-
-try:
-    with open("{0}/sofia.sh".format(output_dir), "w") as config_file:
-        for item in content:
-            config_file.write("{0}".format(item))
-except Exception:
-    sys.stderr.write("Error: Failed to write file: sofia.sh\n")
-    sys.exit(1)
-
-
-# run_sofia.sh
-sys.stdout.write("  run_sofia.sh\n")
-content = []
-content.append("#!/bin/bash\n")
-content.append("param=( ")
-for i in range(n_reg_x * n_reg_y * n_reg_z):
-    content.append("{0:03d} ".format(i + 1))
-content.append(")\n")
-content.append("for i in \"${param[@]}\"\n")
-content.append("do\n")
-content.append("    sbatch {0}/sofia.sh {0}/sofia_$i.par\n".format(output_dir))
-content.append("done\n")
-
-
-try:
-    with open("{0}/run_sofia.sh".format(output_dir), "w") as config_file:
-        for item in content:
-            config_file.write("{0}".format(item))
-except Exception:
-    sys.stderr.write("Error: Failed to write file: run_sofia.sh\n")
-    sys.exit(1)
-
-
 # sofiax.sh
 sys.stdout.write("  sofiax.sh\n")
 content = []
@@ -356,7 +307,7 @@ content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
 content.append("module load openssl/default\n")
 content.append("module load python/3.7.4\n\n")
 content.append(
-    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofiax.img sofiax -c $1 -p $2\n"
+    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/SoFiAX/sofiax.sif sofiax -c $1 -p $2\n"
 )
 
 try:
