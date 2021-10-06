@@ -310,6 +310,15 @@ content.append(
 )
 
 
+try:
+    with open("{0}/sofia.sh".format(output_dir), "w") as config_file:
+        for item in content:
+            config_file.write("{0}".format(item))
+except Exception:
+    sys.stderr.write("Error: Failed to write file: sofia.sh\n")
+    sys.exit(1)
+
+
 # run_sofia.sh
 sys.stdout.write("  run_sofia.sh\n")
 content = []
@@ -322,6 +331,15 @@ content.append("for i in \"${param[@]}\"\n")
 content.append("do\n")
 content.append("    sbatch {0}/sofia.sh {0}/sofia_$i.par\n".format(output_dir))
 content.append("done\n")
+
+
+try:
+    with open("{0}/run_sofia.sh".format(output_dir), "w") as config_file:
+        for item in content:
+            config_file.write("{0}".format(item))
+except Exception:
+    sys.stderr.write("Error: Failed to write file: run_sofia.sh\n")
+    sys.exit(1)
 
 
 # sofiax.sh
