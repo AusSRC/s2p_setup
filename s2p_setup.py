@@ -293,6 +293,37 @@ except Exception:
     sys.exit(1)
 
 
+# sofia.sh
+sys.stdout.write("  sofia.sh\n")
+content = []
+content.append("#!/bin/bash\n\n")
+content.append("#SBATCH --job-name=sofia\n")
+content.append("#SBATCH --output={0}/logs/sofiax_output_%j.log\n".format(output_dir))
+content.append("#SBATCH --error={0}/logs/sofiax_error_%j.log\n".format(output_dir))
+content.append("#SBATCH -N 1 # nodes\n")
+content.append("#SBATCH -n 1 # tasks\n")
+content.append("#SBATCH -c {0:d} # CPUs per node\n".format(n_cpu_cores))
+content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
+content.append("module load openssl/default\n")
+content.append(
+    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofia.img sofia -p $1\n"
+)
+
+
+# run_sofia.sh
+sys.stdout.write("  run_sofia.sh\n")
+content = []
+content.append("#!/bin/bash\n")
+content.append("param=( ")
+for i in range(n_reg_x * n_reg_y * n_reg_z):
+    content.append("{0:03d} ".format(i + 1))
+content.append(")\n")
+content.append("for i in \"${param[@]}\"\n")
+content.append("do\n")
+content.append("    sbatch {0}/sofia.sh {0}/sofia_$i.par\n".format(output_dir))
+content.append("done\n")
+
+
 # sofiax.sh
 sys.stdout.write("  sofiax.sh\n")
 content = []
@@ -307,7 +338,7 @@ content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
 content.append("module load openssl/default\n")
 content.append("module load python/3.7.4\n\n")
 content.append(
-    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/SoFiAX/sofiax.sif sofiax -c $1 -p $2\n"
+    "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/sofiax.img sofiax -c $1 -p $2\n"
 )
 
 try:
