@@ -48,9 +48,52 @@ def substr_search(input_list, substr):
     return -1
 
 
+# Check command-line arguments
+argv = sys.argv
+argc = len(argv)
+
+if (argc != 7):
+    sys.stderr.write("\n\033[1736m Usage     \033[0m\n\n")
+    sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<setup_config> <data_cube> <sofia_par_file> <run_name> <node_size> <output_directory>\033[0m\n\n")  # noqa
+    sys.stderr.write("\033[1736m Arguments \033[0m\n\n")
+    sys.stderr.write("   \033[3m<setup_config>\033[0m       Template s2p_setup.ini file with default parameter values.\n\n")
+    sys.stderr.write("   \033[3m<data_cube>\033[0m          Input FITS data cube on which SoFiA 2 is to be run.\n")
+    sys.stderr.write("                        Note that only the header of that file will be ex-\n")
+    sys.stderr.write("                        tracted and no significant amount of memory will be\n")
+    sys.stderr.write("                        needed.\n\n")
+    sys.stderr.write("   \033[3m<sofia_par_file>\033[0m     SoFiA 2 template parameter file from which the set-\n")
+    sys.stderr.write("                        tings to be used for all regions will be extracted.\n\n")
+    sys.stderr.write("   \033[3m<run_name>\033[0m           Unique name to be used when creating the results ta-\n")
+    sys.stderr.write("                        bles in the database. This must be unique to ensure\n")
+    sys.stderr.write("                        that any existing tables from previous runs are not\n")
+    sys.stderr.write("                        overwritten. It will also be used to name SoFiA's\n")
+    sys.stderr.write("                        output products and catalogues.\n\n")
+    sys.stderr.write("   \033[3m<node_size>\033[0m          Size of the computing worker nodes available to the user.\n")
+    sys.stderr.write("                        Optimal sub-cube split will be determined from this value.\n\n")
+    sys.stderr.write("   \033[3m<output_directory>\033[0m   Directory where output parameter file will be written.\n\n")
+    sys.stderr.write("\033[1736m Purpose   \033[0m\n\n")
+    sys.stderr.write("   This script can be used to automatically partition a data cube into\n")
+    sys.stderr.write("   conveniently sized regions with a certain amount of overlap that can\n")
+    sys.stderr.write("   then be fed into the parallel \033[1mSoFiAX\033[0m framework. A few basic settings\n")
+    sys.stderr.write("   can be adjusted in the \033[3ms2p_setup.ini\033[0m file. The script will also create\n")
+    sys.stderr.write("   the necessary SoFiAX setup files, and SoFiAX can be launched by simply\n")
+    sys.stderr.write("   calling the auto-generated \033[3mrun_sofiax.sh\033[0m script.\n\n")
+    sys.stderr.write("   Note that this script does not actually cut up the data cube, but it\n")
+    sys.stderr.write("   generates the required number of SoFiA parameter files for reading in\n")
+    sys.stderr.write("   and processing sub-regions of the cube.\n\n")
+    sys.exit(1)
+
+s2p_setup_config = str(argv[1])     # s2p_setup template values
+input_filename = str(argv[2])       # FITS data cube
+template_file = str(argv[3])        # SoFiA 2 template parameter file to be used for all subregions
+db_run_name = str(argv[4])          # Unique name of run (used for database table)
+node_size = int(argv[5])            # Size of the computing nodes
+output_dir = str(argv[6])           # Output directory for parameter files
+
+
 # Read settings from configuration file
 config = configparser.ConfigParser()
-success = config.read("/app/s2p_setup.ini")
+success = config.read(s2p_setup_config)
 
 if(len(success) == 0):
     sys.stderr.write("Error: Failed to read config file: s2p_setup.ini\n")
@@ -72,44 +115,6 @@ tolerance_spat = (config["pipeline"]["tolerance_spat"]).split(",")
 tolerance_spec = (config["pipeline"]["tolerance_spec"]).split(",")
 tolerance_spat = [int(x) for x in tolerance_spat]
 tolerance_spec = [int(x) for x in tolerance_spec]
-
-
-# Check command-line arguments
-argv = sys.argv
-argc = len(argv)
-
-if (argc != 6):
-    sys.stderr.write("\n\033[1736m Usage     \033[0m\n\n")
-    sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<data_cube> <template_par_file> <node_size> <unique_name>\033[0m\n\n")  # noqa
-    sys.stderr.write("\033[1736m Arguments \033[0m\n\n")
-    sys.stderr.write("   \033[3m<data_cube>\033[0m          Input FITS data cube on which SoFiA 2 is to be run.\n")
-    sys.stderr.write("                        Note that only the header of that file will be ex-\n")
-    sys.stderr.write("                        tracted and no significant amount of memory will be\n")
-    sys.stderr.write("                        needed.\n\n")
-    sys.stderr.write("   \033[3m<template_par_file>\033[0m  SoFiA 2 template parameter file from which the set-\n")
-    sys.stderr.write("                        tings to be used for all regions will be extracted.\n\n")
-    sys.stderr.write("   \033[3m<unique_name>\033[0m        Unique name to be used when creating the results ta-\n")
-    sys.stderr.write("                        bles in the database. This must be unique to ensure\n")
-    sys.stderr.write("                        that any existing tables from previous runs are not\n")
-    sys.stderr.write("                        overwritten. It will also be used to name SoFiA's\n")
-    sys.stderr.write("                        output products and catalogues.\n\n")
-    sys.stderr.write("\033[1736m Purpose   \033[0m\n\n")
-    sys.stderr.write("   This script can be used to automatically partition a data cube into\n")
-    sys.stderr.write("   conveniently sized regions with a certain amount of overlap that can\n")
-    sys.stderr.write("   then be fed into the parallel \033[1mSoFiAX\033[0m framework. A few basic settings\n")
-    sys.stderr.write("   can be adjusted in the \033[3ms2p_setup.ini\033[0m file. The script will also create\n")
-    sys.stderr.write("   the necessary SoFiAX setup files, and SoFiAX can be launched by simply\n")
-    sys.stderr.write("   calling the auto-generated \033[3mrun_sofiax.sh\033[0m script.\n\n")
-    sys.stderr.write("   Note that this script does not actually cut up the data cube, but it\n")
-    sys.stderr.write("   generates the required number of SoFiA parameter files for reading in\n")
-    sys.stderr.write("   and processing sub-regions of the cube.\n\n")
-    sys.exit(1)
-
-input_filename = str(argv[1])   # FITS data cube
-template_file = str(argv[2])    # SoFiA 2 template parameter file to be used for all subregions
-db_run_name = str(argv[3])      # Unique name of run (used for database table)
-node_size = int(argv[4])        # Size of the computing nodes
-output_dir = str(argv[5])       # Output directory for parameter files
 
 
 # Calculate appropriate region size from node_size and estimated SoFiA overhead
