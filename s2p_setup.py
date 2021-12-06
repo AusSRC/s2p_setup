@@ -54,7 +54,7 @@ argc = len(argv)
 
 if (argc != 7):
     sys.stderr.write("\n\033[1736m Usage     \033[0m\n\n")
-    sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<setup_config> <data_cube> <sofia_par_file> <run_name> <node_size> <output_directory>\033[0m\n\n")  # noqa
+    sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<setup_config> <data_cube> <sofia_par_file> <run_name> <output_directory>\033[0m\n\n")  # noqa
     sys.stderr.write("\033[1736m Arguments \033[0m\n\n")
     sys.stderr.write("   \033[3m<setup_config>\033[0m       Template s2p_setup.ini file with default parameter values.\n\n")
     sys.stderr.write("   \033[3m<data_cube>\033[0m          Input FITS data cube on which SoFiA 2 is to be run.\n")
@@ -68,8 +68,6 @@ if (argc != 7):
     sys.stderr.write("                        that any existing tables from previous runs are not\n")
     sys.stderr.write("                        overwritten. It will also be used to name SoFiA's\n")
     sys.stderr.write("                        output products and catalogues.\n\n")
-    sys.stderr.write("   \033[3m<node_size>\033[0m          Size of the computing worker nodes available to the user.\n")
-    sys.stderr.write("                        Optimal sub-cube split will be determined from this value.\n\n")
     sys.stderr.write("   \033[3m<output_directory>\033[0m   Directory where output parameter file will be written.\n\n")
     sys.stderr.write("\033[1736m Purpose   \033[0m\n\n")
     sys.stderr.write("   This script can be used to automatically partition a data cube into\n")
@@ -87,8 +85,7 @@ s2p_setup_config = str(argv[1])     # s2p_setup template values
 input_filename = str(argv[2])       # FITS data cube
 template_file = str(argv[3])        # SoFiA 2 template parameter file to be used for all subregions
 db_run_name = str(argv[4])          # Unique name of run (used for database table)
-node_size = int(argv[5])            # Size of the computing nodes
-output_dir = str(argv[6])           # Output directory for parameter files
+output_dir = str(argv[5])           # Output directory for parameter files
 
 
 # Read settings from configuration file
@@ -100,12 +97,14 @@ if(len(success) == 0):
     sys.stderr.write("Please ensure that a copy of that file is in the current directory.\n")
     sys.exit(1)
 
+
 x_min = int(config["boundary"]["x_min"])
 x_max = int(config["boundary"]["x_max"])
 y_min = int(config["boundary"]["y_min"])
 y_max = int(config["boundary"]["y_max"])
 z_min = int(config["boundary"]["z_min"])
 z_max = int(config["boundary"]["z_max"])
+region_size = int(config["region"]["region_size"])
 overlap_spat = int(config["region"]["overlap_spat"])
 overlap_spec = int(config["region"]["overlap_spec"])
 n_cpu_cores = int(config["pipeline"]["cpu_cores"])
@@ -115,11 +114,6 @@ tolerance_spat = (config["pipeline"]["tolerance_spat"]).split(",")
 tolerance_spec = (config["pipeline"]["tolerance_spec"]).split(",")
 tolerance_spat = [int(x) for x in tolerance_spat]
 tolerance_spec = [int(x) for x in tolerance_spec]
-
-
-# Calculate appropriate region size from node_size and estimated SoFiA overhead
-region_size = int(node_size / 2.3)
-
 
 # Try to open FITS file
 try:
