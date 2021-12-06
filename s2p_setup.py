@@ -52,7 +52,7 @@ def substr_search(input_list, substr):
 argv = sys.argv
 argc = len(argv)
 
-if (argc != 7):
+if (argc != 6):
     sys.stderr.write("\n\033[1736m Usage     \033[0m\n\n")
     sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<setup_config> <data_cube> <sofia_par_file> <run_name> <output_directory>\033[0m\n\n")  # noqa
     sys.stderr.write("\033[1736m Arguments \033[0m\n\n")
