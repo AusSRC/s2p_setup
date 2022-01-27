@@ -250,6 +250,13 @@ for z in range(n_reg_z):
             else:
                 par[i] = "output.filename  =  {0}_{1:03d}\n".format(db_run_name, index)
 
+            i = substr_search(par, "output.directory")
+            output_products_dir = f"{output_dir}/outputs"
+            if (i < 0):
+                par.append("output.directory  =  {0}_{1:03d}\n".format(output_products_dir, index))
+            else:
+                par[i] = "output.directory  =  {0}_{1:03d}\n".format(output_products_dir, index)
+
             # Dump parameters into new file
             filename = "{0}/sofia_{1:03d}.par".format(output_dir, index)
             sys.stdout.write("  {0}\n".format(filename))
