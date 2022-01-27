@@ -238,6 +238,18 @@ for z in range(n_reg_z):
             if (z2 > z_max or z == n_reg_z - 1):
                 z2 = z_max
 
+            i = substr_search(par, "input.data")
+            if (i < 0):
+                par.append("input.data  =  {0}\n".format(input_filename))
+            else:
+                par[i] = "input.data  =  {0}\n".format(input_filename)
+
+            i = substr_search(par, "output.directory")
+            if (i < 0):
+                par.append("output.directory  =  {0}/outputs\n".format(output_dir))
+            else:
+                par[i] = "output.directory  =  {0}/outputs\n".format(output_dir)
+
             i = substr_search(par, "input.region")
             if (i < 0):
                 par.append("input.region  =  {0:d},{1:d},{2:d},{3:d},{4:d},{5:d}\n".format(x1, x2, y1, y2, z1, z2))
@@ -249,13 +261,6 @@ for z in range(n_reg_z):
                 par.append("output.filename  =  {0}_{1:03d}\n".format(db_run_name, index))
             else:
                 par[i] = "output.filename  =  {0}_{1:03d}\n".format(db_run_name, index)
-
-            i = substr_search(par, "output.directory")
-            output_products_dir = f"{output_dir}/outputs"
-            if (i < 0):
-                par.append("output.directory  =  {0}_{1:03d}\n".format(output_products_dir, index))
-            else:
-                par[i] = "output.directory  =  {0}_{1:03d}\n".format(output_products_dir, index)
 
             # Dump parameters into new file
             filename = "{0}/sofia_{1:03d}.par".format(output_dir, index)
