@@ -13,10 +13,12 @@ extragalactic HI source finding pipeline.
 
 ## Usage     
 
-    s2p_setup.py <data_cube> <template_par_file> <unique_name>
+    s2p_setup.py <s2p_template> <data_cube> <template_par_file> <unique_name> <output_directory>
 
 
 ## Arguments 
+
+* `<s2p_template>`       Template `s2p_setup.ini` file.
 
 * `<data_cube>`          Input FITS data cube on which SoFiA 2 is to be
                          run. Note that only the header of that file will
@@ -33,6 +35,7 @@ extragalactic HI source finding pipeline.
                          runs are not overwritten. It will also be used
                          to name SoFiA's output products and catalogues.
 
+* `<output_directory>`   Output products directory for SoFiA 2 output products.
 
 ## Purpose   
 
