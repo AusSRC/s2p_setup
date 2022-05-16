@@ -52,7 +52,7 @@ def substr_search(input_list, substr):
 argv = sys.argv
 argc = len(argv)
 
-if (argc != 6):
+if (argc != 7):
     sys.stderr.write("\n\033[1736m Usage     \033[0m\n\n")
     sys.stderr.write("   \033[1ms2p_setup.py\033[0m \033[3m<setup_config> <data_cube> <sofia_par_file> <run_name> <output_directory>\033[0m\n\n")  # noqa
     sys.stderr.write("\033[1736m Arguments \033[0m\n\n")
@@ -68,7 +68,9 @@ if (argc != 6):
     sys.stderr.write("                        that any existing tables from previous runs are not\n")
     sys.stderr.write("                        overwritten. It will also be used to name SoFiA's\n")
     sys.stderr.write("                        output products and catalogues.\n\n")
-    sys.stderr.write("   \033[3m<output_directory>\033[0m   Directory where output parameter file will be written.\n\n")
+    sys.stderr.write("   \033[3m<parameter_files_output_directory>\033[0m   Directory where output parameter file will be written.\n\n")
+    sys.stderr.write("\033[1736m Purpose   \033[0m\n\n")
+    sys.stderr.write("   \033[3m<products_output_directory>\033[0m   Directory where output data products file will be written.\n\n")
     sys.stderr.write("\033[1736m Purpose   \033[0m\n\n")
     sys.stderr.write("   This script can be used to automatically partition a data cube into\n")
     sys.stderr.write("   conveniently sized regions with a certain amount of overlap that can\n")
@@ -86,6 +88,7 @@ input_filename = str(argv[2])       # FITS data cube
 template_file = str(argv[3])        # SoFiA 2 template parameter file to be used for all subregions
 db_run_name = str(argv[4])          # Unique name of run (used for database table)
 output_dir = str(argv[5])           # Output directory for parameter files
+products_dir = str(argv[6])         # Output directory for sofia cubelets
 
 
 # Read settings from configuration file
@@ -246,9 +249,9 @@ for z in range(n_reg_z):
 
             i = substr_search(par, "output.directory")
             if (i < 0):
-                par.append("output.directory  =  {0}/outputs\n".format(output_dir))
+                par.append("output.directory  =  {0}\n".format(products_dir))
             else:
-                par[i] = "output.directory  =  {0}/outputs\n".format(output_dir)
+                par[i] = "output.directory  =  {0}\n".format(products_dir)
 
             i = substr_search(par, "input.region")
             if (i < 0):
