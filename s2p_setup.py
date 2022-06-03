@@ -4,8 +4,12 @@ import sys
 import math
 import argparse
 import configparser
+import logging
 from astropy.io import fits
 from astropy.wcs import WCS
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_args(argv):
@@ -124,10 +128,11 @@ def main(argv):
         # Get boundary
         freq = header['CRVAL4']
         wcs = WCS(header)
+
         if args.region:
+            logging.info("Using provided RA/Dec region")
             x_min, x_max, y_min, y_max = get_boundary(wcs, args.region, freq)
-        
-        print(x_min, x_max, y_min, y_max)
+            logging.info(f"RA/Dec region {args.region} in pixels: {(x_min, x_max, y_min, y_max)}")
 
         bitpix = int(header["BITPIX"])
         word_size = int(abs(bitpix) / 8)

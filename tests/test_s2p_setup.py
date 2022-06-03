@@ -40,3 +40,5 @@ class TestSetup(unittest.TestCase):
             "--output_dir", 'outputs',
             "--products_dir", 'products',
         ])
+
+    # TODO(austin): Test functionality where region not provided (should just use pre-set pixel coordinates)
