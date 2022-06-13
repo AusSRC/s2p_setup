@@ -11,43 +11,41 @@ extragalactic HI source finding pipeline.
 * SoFiA-X: https://github.com/AusSRC/SoFiAX
 
 
-## Usage     
+## Usage
 
-    s2p_setup.py <s2p_template> <data_cube> <template_par_file> <unique_name> <output_directory>
+```
+s2p_setup.py \
+    --config <s2p_template> \
+    --image_cube <image_cube> \
+    --run_name <run_name> \
+    --sofia_template <template_parameter_file> \
+    --output_dir <output_directory> \
+    --products_dir <products_directory>
+```
 
 
-## Arguments 
+## Arguments
 
-* `<s2p_template>`       Template `s2p_setup.ini` file.
+Required arguments:
 
-* `<data_cube>`          Input FITS data cube on which SoFiA 2 is to be
-                         run. Note that only the header of that file will
-                         be extracted and no significant amount of memory
-                         will be needed.
+| Argument | Description | 
+| --- | --- |
+| `s2p_template` | Template `s2p_setup.ini` file. | 
+| `image_cube` | Input FITS data cube on which SoFiA 2 is to be run. Note that only the header of that file will be extracted and no significant amount of memory will be needed. | 
+| `run_name` | Name of the pipeline run. | 
+| `template_par_file` | SoFiA 2 template parameter file from which the settings to be used for all regions will be extracted. |
+| `output_directory` | Output products directory for SoFiA 2 output products. |
+| `products_directory` | Sub-cube products sub-directory for SoFiA 2 output products. |
+| `region*` | RA and declination values (RA min, RA max, Dec min, Dec max) for constraining region of image cube to extract. If not provided this will default to the pixel region defined in the configuration file. |
 
-* `<template_par_file>`  SoFiA 2 template parameter file from which the
-                         settings to be used for all regions will be
-                         extracted.
-
-* `<unique_name>`        Unique name to be used when creating the results
-                         tables in the database. This must be unique to
-                         ensure that any existing tables from previous
-                         runs are not overwritten. It will also be used
-                         to name SoFiA's output products and catalogues.
-
-* `<output_directory>`   Output products directory for SoFiA 2 output products.
+*Argument is optional
 
 ## Purpose   
 
 This script can be used to automatically partition a data cube into
 conveniently sized regions with a certain amount of overlap that can then
 be fed into the parallel SoFiA-X framework. A few basic settings can be
-adjusted in the `s2p_setup.ini` file. The script will also create the
-necessary SoFiA-X setup files, and SoFiA-X can be launched by simply
-calling the auto-generated `run_sofiax.sh` script. It is strongly
-recommended to visually check and, if necessary, manually correct all
-generated setup files before executing the `run_sofiax.sh` script to
-launch SoFiA-X.
+adjusted in the `s2p_setup.ini` file.
 
 Note that this script does not actually cut up the data cube, but it
 generates the required number of SoFiA parameter files for reading in and
