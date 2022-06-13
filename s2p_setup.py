@@ -4,12 +4,8 @@ import sys
 import math
 import argparse
 import configparser
-import logging
 from astropy.io import fits
 from astropy.wcs import WCS
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 def parse_args(argv):
@@ -88,6 +84,24 @@ def get_boundary(wcs, region_str, freq):
     return x_min, x_max, y_min, y_max
 
 
+def subcube_split_dimension(w_total, w, min_overlap=256):
+    """Determine number of sub-cubes (N) and overlap (overlap) for optimal split.
+
+    """
+    # Determine optimal number of sub-cubes
+    N = 1
+    width = N * (w - min_overlap) + min_overlap
+    if width > w_total:
+        raise Exception("Selected region smaller than minimum sub-cube size in one dimension.")
+    while width < w_total:
+        N += 1
+        width = N * (w - min_overlap) + min_overlap
+
+    # Solve for minimum overlap
+    overlap = math.floor((N * w - w_total) / (N - 1))
+    return N, overlap
+
+
 def main(argv):
     """Script to generate cubelet parameter files for source finding run.
 
@@ -103,16 +117,16 @@ def main(argv):
         sys.stderr.write("Please ensure that a copy of that file is in the current directory.\n")
         sys.exit(1)
 
+    # Default region sizes
     x_min = int(config["boundary"]["x_min"])
     x_max = int(config["boundary"]["x_max"])
     y_min = int(config["boundary"]["y_min"])
     y_max = int(config["boundary"]["y_max"])
     z_min = int(config["boundary"]["z_min"])
     z_max = int(config["boundary"]["z_max"])
-    region_size = int(config["region"]["region_size"])
-    overlap_spat = int(config["region"]["overlap_spat"])
-    overlap_spec = int(config["region"]["overlap_spec"])
-    n_cpu_cores = int(config["pipeline"]["cpu_cores"])
+    w_x, w_y, w_z = tuple([int(v) for v in config["region"]["subcube_shape"].split(" ")])
+    min_overlap_spat = int(config["region"]["min_overlap_spat"])
+    min_overlap_spec = int(config["region"]["min_overlap_spec"])
     tolerance_pos = int(config["pipeline"]["tolerance_pos"])
     tolerance_flux = int(config["pipeline"]["tolerance_flux"])
     tolerance_spat = (config["pipeline"]["tolerance_spat"]).split(",")
@@ -130,9 +144,9 @@ def main(argv):
         wcs = WCS(header)
 
         if args.region:
-            logging.info("Using provided RA/Dec region")
+            sys.stdout.write("Using provided RA/Dec region")
             x_min, x_max, y_min, y_max = get_boundary(wcs, args.region, freq)
-            logging.info(f"RA/Dec region {args.region} in pixels: {(x_min, x_max, y_min, y_max)}")
+            sys.stdout.write(f"RA/Dec region {args.region} in pixels: {(x_min, x_max, y_min, y_max)}")
 
         bitpix = int(header["BITPIX"])
         word_size = int(abs(bitpix) / 8)
@@ -171,13 +185,9 @@ def main(argv):
     sys.stdout.write("\nInput:\n")
     sys.stdout.write("  Input range:     {0}-{1}, {2}-{3}, {4}-{5}\n".format(x_min, x_max, y_min, y_max, z_min, z_max))
 
-    # Determine nominal size of subregions in each dimension
-    size = int(math.floor((float(1024 * 1024 * 1024 * region_size) / float(word_size)) ** (1.0 / 3.0)))
-
-    # Determine practical region size
-    n_reg_x = int(math.ceil(float(x_max - x_min + 1) / float(size)))
-    n_reg_y = int(math.ceil(float(y_max - y_min + 1) / float(size)))
-    n_reg_z = int(math.ceil(float(z_max - z_min + 1) / float(size)))
+    n_reg_x, overlap_x = subcube_split_dimension(x_max - x_min, w_x, min_overlap_spat)
+    n_reg_y, overlap_y = subcube_split_dimension(y_max - y_min, w_y, min_overlap_spat)
+    n_reg_z, overlap_z = subcube_split_dimension(z_max - z_min, w_z, min_overlap_spec)
 
     if (n_reg_x * n_reg_y * n_reg_z > 999):
         sys.stderr.write(
@@ -187,16 +197,10 @@ def main(argv):
             """.format(n_reg_x * n_reg_y * n_reg_z))
         sys.exit(1)
 
-    size_x = int(math.floor(float(x_max - x_min + 1 + (n_reg_x - 1) * overlap_spat) / float(n_reg_x)))
-    size_y = int(math.floor(float(y_max - y_min + 1 + (n_reg_y - 1) * overlap_spat) / float(n_reg_y)))
-    size_z = int(math.floor(float(z_max - z_min + 1 + (n_reg_z - 1) * overlap_spec) / float(n_reg_z)))
-
-    ram_per_region = size_x * size_y * size_z * word_size / (1024.0 * 1024.0 * 1024.0)  # GB
-    ram_per_node = int(math.ceil(2.3 * ram_per_region))  # GB
-
+    ram_per_region = w_x * w_y * w_z * word_size / (1024.0 * 1024.0 * 1024.0)  # GB
     sys.stdout.write("\nOutput:\n")
     sys.stdout.write("  No. of regions:  {0} x {1} x {2}\n".format(n_reg_x, n_reg_y, n_reg_z))
-    sys.stdout.write("  Region size:     {0} x {1} x {2}\n".format(size_x, size_y, size_z))
+    sys.stdout.write("  Region size:     {0} x {1} x {2}\n".format(w_x, w_y, w_z))
     sys.stdout.write("  RAM per region:  {0:.2f} GB (x 2.3)\n".format(ram_per_region))
 
     # Read template parameter file
@@ -217,25 +221,12 @@ def main(argv):
 
                 par = template_par[:]
 
-                x1 = x_min + int(math.floor(x * (size_x - overlap_spat)))
-                y1 = y_min + int(math.floor(y * (size_y - overlap_spat)))
-                z1 = z_min + int(math.floor(z * (size_z - overlap_spec)))
-                x2 = x1 + size_x
-                y2 = y1 + size_y
-                z2 = z1 + size_z
-
-                if (x1 < 0):
-                    x1 = 0
-                if (y1 < 0):
-                    y1 = 0
-                if (z1 < 0):
-                    z1 = 0
-                if (x2 > x_max or x == n_reg_x - 1):
-                    x2 = x_max
-                if (y2 > y_max or y == n_reg_y - 1):
-                    y2 = y_max
-                if (z2 > z_max or z == n_reg_z - 1):
-                    z2 = z_max
+                x1 = max((w_x - overlap_x) * x + x_min, 0)
+                y1 = max((w_y - overlap_y) * y + y_min, 0)
+                z1 = max((w_z - overlap_z) * z + z_min, 0)
+                x2 = min(x1 + w_x, x_max)
+                y2 = min(y1 + w_y, y_max)
+                z2 = min(z1 + w_z, z_max)
 
                 i = substr_search(par, "input.data")
                 if (i < 0):
@@ -272,10 +263,8 @@ def main(argv):
                     sys.stderr.write("Error: Failed to write output parameter file: {}\n".format(filename))
                     sys.exit(1)
 
-    # Create config files
-    sys.stdout.write("\nCreating config files and scripts:\n")
-
     # config.ini
+    sys.stdout.write("\nCreating config files and scripts:\n")
     sys.stdout.write("  config.ini\n")
     content = []
     content.append("[SoFiAX]\n")
@@ -299,57 +288,6 @@ def main(argv):
     except Exception:
         sys.stderr.write("Error: Failed to write file: config.ini\n")
         sys.exit(1)
-
-    # sofiax.sh
-    sys.stdout.write("  sofiax.sh\n")
-    content = []
-    content.append("#!/bin/bash\n\n")
-    content.append("#SBATCH --job-name=sofiax\n")
-    content.append("#SBATCH --output={0}/logs/sofiax_output_%j.log\n".format(args.output_dir))
-    content.append("#SBATCH --error={0}/logs/sofiax_error_%j.log\n".format(args.output_dir))
-    content.append("#SBATCH -N 1 # nodes\n")
-    content.append("#SBATCH -n 1 # tasks\n")
-    content.append("#SBATCH -c {0:d} # CPUs per node\n".format(n_cpu_cores))
-    content.append("#SBATCH --mem={0:d}G\n\n".format(ram_per_node))
-    content.append("module load openssl/default\n")
-    content.append("module load python/3.7.4\n\n")
-    # TODO(austin): This is probably incorrect and not flexible for different execution environments
-    content.append(
-        "singularity exec -B /mnt:/mnt /mnt/shared/wallaby/apps/singularity/SoFiAX/sofiax.sif sofiax -c $1 -p $2\n"
-    )
-
-    try:
-        with open("{0}/sofiax.sh".format(args.output_dir), "w") as config_file:
-            for item in content:
-                config_file.write("{0}".format(item))
-    except Exception:
-        sys.stderr.write("Error: Failed to write file: sofiax.sh\n")
-        sys.exit(1)
-
-    # run_sofiax.sh
-    sys.stdout.write("  run_sofiax.sh\n")
-    content = []
-    content.append("#!/bin/bash\n")
-    content.append("param=( ")
-    for i in range(n_reg_x * n_reg_y * n_reg_z):
-        content.append("{0:03d} ".format(i + 1))
-    content.append(")\n")
-    content.append("for i in \"${param[@]}\"\n")
-    content.append("do\n")
-    content.append("    sbatch {0}/sofiax.sh {0}/config.ini {0}/sofia_$i.par\n".format(args.output_dir))
-    content.append("done\n")
-
-    try:
-        with open("{0}/run_sofiax.sh".format(args.output_dir), "w") as config_file:
-            for item in content:
-                config_file.write("{0}".format(item))
-    except Exception:
-        sys.stderr.write("Error: Failed to write file: run_sofiax.sh\n")
-        sys.exit(1)
-
-    sys.stdout.write(
-        "\nPlease check all output files before executing the run_sofiax.sh script\nto launch the SoFiAX run.\n\n"
-    )
 
 
 if __name__ == '__main__':

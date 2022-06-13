@@ -34,11 +34,27 @@ class TestSetup(unittest.TestCase):
         s2p_setup.main([
             "--config", '/mnt/shared/wallaby/config/s2p_setup.ini',
             "--image_cube", '/mnt/shared/wallaby/data/image.restored.i.NGC4808_A.SB33681.cube.contsub.fits',
-            "--region", '194.4, 195.4, 5.50, 6.50',
+            "--region", '192.4, 195.4, 4.50, 7.50',
             "--run_name", 'TestSetup',
             "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
             "--output_dir", 'outputs',
             "--products_dir", 'products',
         ])
 
-    # TODO(austin): Test functionality where region not provided (should just use pre-set pixel coordinates)
+    def test_number_of_subcubes(self):
+        """Two part test.
+        1. Test behaviour where no --region provided (default in config is the entire cube)
+        2. Assert number of parameter files generated for the region is as expected.
+
+        """
+        N_expect = 54
+        s2p_setup.main([
+            "--config", '/mnt/shared/wallaby/config/s2p_setup.ini',
+            "--image_cube", '/mnt/shared/wallaby/data/image.restored.i.NGC4808_A.SB33681.cube.contsub.fits',
+            "--run_name", 'TestSetup',
+            "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
+            "--output_dir", 'outputs',
+            "--products_dir", 'products',
+        ])
+        parameter_files = glob.glob("outputs/sofia_*.par")
+        self.assertEqual(len(parameter_files), N_expect)
