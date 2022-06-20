@@ -92,7 +92,7 @@ def subcube_split_dimension(w_total, w, min_overlap=256):
     N = 1
     width = N * (w - min_overlap) + min_overlap
     if width > w_total:
-        raise Exception("Selected region smaller than minimum sub-cube size in one dimension.")
+        return 1, 0
     while width < w_total:
         N += 1
         width = N * (w - min_overlap) + min_overlap
