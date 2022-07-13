@@ -145,8 +145,14 @@ def main(argv):
 
         if args.region:
             sys.stdout.write("Using provided RA/Dec region")
-            x_min, x_max, y_min, y_max = get_boundary(wcs, args.region, freq)
-            sys.stdout.write(f"RA/Dec region {args.region} in pixels: {(x_min, x_max, y_min, y_max)}")
+            try:
+                x_min, x_max, y_min, y_max = get_boundary(wcs, args.region, freq)
+                sys.stdout.write(f"RA/Dec region {args.region} in pixels: {(x_min, x_max, y_min, y_max)}")
+            except Exception as e:
+                # TODO(austin): write unittest for incorrectly formatted region input
+                sys.stdout.write(
+                    f"RA/Dec region {args.region} could not be interpreted. Raised error {e}. Default to entire cube."
+                )
 
         bitpix = int(header["BITPIX"])
         word_size = int(abs(bitpix) / 8)
