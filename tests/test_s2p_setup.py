@@ -46,6 +46,7 @@ class TestSetup(unittest.TestCase):
         s2p_setup.main([
             "--config", '/mnt/shared/wallaby/config/s2p_setup.ini',
             "--image_cube", '/mnt/shared/wallaby/data/image.restored.i.NGC4808_A.SB33681.cube.contsub.fits',
+            "--weights_cube", '/mnt/shared/wallaby/data/weights.i.NGC4808_A.SB33681.cube.fits',
             "--region", '192.4, 195.4, 4.50, 7.50',
             "--run_name", 'TestSetup',
             "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
@@ -65,6 +66,7 @@ class TestSetup(unittest.TestCase):
         s2p_setup.main([
             "--config", '/mnt/shared/wallaby/config/s2p_setup.ini',
             "--image_cube", '/mnt/shared/wallaby/data/image.restored.i.NGC4808_A.SB33681.cube.contsub.fits',
+            "--weights_cube", '/mnt/shared/wallaby/data/weights.i.NGC4808_A.SB33681.cube.fits',
             "--run_name", 'TestSetup',
             "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
             "--output_dir", 'outputs',
@@ -82,6 +84,7 @@ class TestSetup(unittest.TestCase):
         s2p_setup.main([
             "--config", '/mnt/shared/wallaby/config/s2p_setup.ini',
             "--image_cube", '/mnt/shared/wallaby/data/image.restored.i.NGC4808_A.SB33681.cube.contsub.fits',
+            "--weights_cube", '/mnt/shared/wallaby/data/weights.i.NGC4808_A.SB33681.cube.fits',
             "--region", '195.0, 196.0, 5.0, 6.0',
             "--run_name", 'TestSetup',
             "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
@@ -99,6 +102,7 @@ class TestSetup(unittest.TestCase):
             "--config", '/mnt/shared/wallaby/config/s2p_setup.milkyway.ini',
             "--region", '200.77, 204.77, -24.605, -20.605',
             "--image_cube", '/mnt/shared/wallaby/post-runs/test/mosaic.fits',
+            "--weights_cube", '/mnt/shared/wallaby/post-runs/test/weights.mosaic.fits',
             "--run_name", 'TestSetup',
             "--sofia_template", '/mnt/shared/wallaby/config/sofia.par',
             "--output_dir", 'pipeline_test_outputs',

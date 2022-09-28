@@ -23,6 +23,12 @@ def parse_args(argv):
         help="Path to image cube file"
     )
     parser.add_argument(
+        "--weights_cube",
+        type=str,
+        required=True,
+        help="Path to weights cube file"
+    )
+    parser.add_argument(
         "--region",
         type=str,
         required=False,
@@ -239,6 +245,12 @@ def main(argv):
                     par.append("input.data  =  {0}\n".format(args.image_cube))
                 else:
                     par[i] = "input.data  =  {0}\n".format(args.image_cube)
+
+                i = substr_search(par, "input.weights")
+                if (i < 0):
+                    par.append("input.weights  =  {0}\n".format(args.weights_cube))
+                else:
+                    par[i] = "input.weights  =  {0}\n".format(args.weights_cube)
 
                 i = substr_search(par, "output.directory")
                 if (i < 0):
