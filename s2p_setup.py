@@ -97,7 +97,7 @@ def subcube_split_dimension(w_total, w, min_overlap=256):
     # Determine optimal number of sub-cubes
     N = 1
     width = N * (w - min_overlap) + min_overlap
-    if width > w_total:
+    if width >= w_total:
         return 1, 0
     while width < w_total:
         N += 1
