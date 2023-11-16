@@ -36,6 +36,12 @@ def parse_args(argv):
         help="RA and Dec boundaries for the region of the cube that will be processed",
     )
     parser.add_argument(
+        "--pixel_extent",
+        type=str,
+        required=False,
+        help="X and Y pixel extent from centre",
+    )
+    parser.add_argument(
         "--run_name",
         type=str,
         required=True,
@@ -170,6 +176,14 @@ def main(argv):
                 sys.stdout.write(
                     f"RA/Dec region {args.region} could not be interpreted. Raised error {e}. Default to entire cube."
                 )
+        elif args.pixel_extent:
+            pixel_region = [int(s) for s in args.pixel_extent.strip(' ').split(',')]
+            nx_c = int(header["NAXIS1"])
+            ny_c = int(header["NAXIS2"]) 
+            x_min = int(nx_c/2.) - pixel_region[0]
+            x_max = int(nx_c/2.) + pixel_region[0]
+            y_min = int(ny_c/2.) - pixel_region[1]
+            y_max = int(ny_c/2.) + pixel_region[1]
 
         bitpix = int(header["BITPIX"])
         word_size = int(abs(bitpix) / 8)

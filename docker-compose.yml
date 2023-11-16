@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  s2p_setup:
+    platform: linux/amd64
+    image: aussrc/s2p_setup
+    container_name: s2p_setup
+    build:
+      context: .
+      dockerfile: Dockerfile
