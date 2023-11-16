@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import math
 import argparse
@@ -122,6 +123,16 @@ def main(argv):
         sys.stderr.write("Error: Failed to read config file: s2p_setup.ini\n")
         sys.stderr.write("Please ensure that a copy of that file is in the current directory.\n")
         sys.exit(1)
+
+    try:
+        os.makedirs(args.output_dir)
+    except:
+        pass
+
+    try:
+        os.makedirs(args.products_dir)
+    except:
+        pass
 
     # Default region sizes
     x_min = int(config["boundary"]["x_min"])
