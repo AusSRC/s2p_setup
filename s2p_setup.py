@@ -7,6 +7,7 @@ import argparse
 import configparser
 from astropy.io import fits
 from astropy.wcs import WCS
+from astropy import units as u
 
 
 def parse_args(argv):
@@ -40,6 +41,12 @@ def parse_args(argv):
         type=str,
         required=False,
         help="X and Y pixel extent from centre",
+    )
+    parser.add_argument(
+        "--centre_coord",
+        type=str,
+        required=False,
+        help="[RA Dec] (degrees) of the centre coordinate to use with --pixel_extent parameter",
     )
     parser.add_argument(
         "--run_name",
@@ -178,12 +185,23 @@ def main(argv):
                 )
         elif args.pixel_extent:
             pixel_region = [int(s) for s in args.pixel_extent.strip(' ').split(',')]
-            nx_c = int(header["NAXIS1"])
-            ny_c = int(header["NAXIS2"]) 
-            x_min = int(nx_c/2.) - pixel_region[0]
-            x_max = int(nx_c/2.) + pixel_region[0]
-            y_min = int(ny_c/2.) - pixel_region[1]
-            y_max = int(ny_c/2.) + pixel_region[1]
+            if args.centre_coord:
+                centre = [float(c) for c in args.centre_coord.strip(' ').split(' ')]
+                ra = float(centre[0]) * u.deg
+                dec = float(centre[1]) * u.deg
+                wcs_slice = wcs[0, 0, :, :]
+                nx_c, ny_c = wcs_slice.world_to_pixel_values(ra, dec)
+                nx_c = int(nx_c)
+                ny_c = int(ny_c)
+                sys.stdout.write(f'Using custom centre coordinates: ({nx_c}, {ny_c})\n')
+            else:
+                nx_c = int(header["NAXIS1"]) / 2.
+                ny_c = int(header["NAXIS2"]) / 2.
+
+            x_min = nx_c - pixel_region[0]
+            x_max = nx_c + pixel_region[0]
+            y_min = ny_c - pixel_region[1]
+            y_max = ny_c + pixel_region[1]
 
         bitpix = int(header["BITPIX"])
         word_size = int(abs(bitpix) / 8)
